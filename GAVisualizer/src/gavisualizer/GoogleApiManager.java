@@ -48,7 +48,14 @@ public class GoogleApiManager {
                 .setDimensions("ga:country")
                 .setSort("-ga:sessions")
                 .execute();
-    }   
+    }
+    
+    public GaData getWebsiteSessionsByWeek() throws IOException {
+        return _analytics.data().ga()
+                .get("ga:" + _profile, "2012-01-01", "2015-02-22", "ga:sessions")
+                .setDimensions("ga:nthWeek")
+                .execute();
+    }     
     
     public GaData getWebsiteDownloads() throws IOException {
         return _analytics.data().ga()

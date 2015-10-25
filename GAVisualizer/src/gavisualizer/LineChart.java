@@ -31,22 +31,26 @@ public class LineChart implements IChart {
     private CategoryDataset _dataset;
     private JFreeChart _chart;
     private String _title;
+    private String _axisLabelDomain;
+    private String _axisLabelRange;
     
-    LineChart(String title, CategoryDataset dataset) {
+    LineChart(String title, CategoryDataset dataset, String axisLabelDomain, String axisLabelRange) {
         _dataset = dataset;
         _title = title;
+        _axisLabelDomain = axisLabelDomain;
+        _axisLabelRange = axisLabelRange;
     }
     
     public void generate()
     {
         JFreeChart chart = ChartFactory.createLineChart(
-            "Line Chart Demo 1",       // chart title
-            "Type",                    // domain axis label
-            "Value",                   // range axis label
-            _dataset,                   // data
+            _title,                    // chart title
+            _axisLabelDomain,          // domain axis label
+            _axisLabelRange,           // range axis label
+            _dataset,                  // data
             PlotOrientation.VERTICAL,  // orientation
             true,                      // include legend
-            true,                      // tooltips
+            false,                     // tooltips
             false                      // urls
         );
 

@@ -40,6 +40,8 @@ import java.io.IOException;
 import org.jfree.chart.ChartUtilities;
 
 import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 /**
  * A simple example of how to access the Google Analytics API using a service
  * account.
@@ -50,7 +52,7 @@ public class GAVisualizer {
     
     public static void main(String[] args) {
         try {
-            ChartGenerator generator = new ChartGenerator("", 1100, 900);
+            ChartGenerator generator = new ChartGenerator("", 1200, 800);
             GoogleApiManager api = new GoogleApiManager();
             
             // PieChart - Sessions by Country
@@ -63,9 +65,10 @@ public class GAVisualizer {
             
             // LineChart - Sessions by Country
             GaData raw2 = api.getWebsiteDownloads();
-            CategoryDataset ds2 = createDSWebsiteDownloads(raw2);
+            GaData rawWebsiteSessionsByWeek = api.getWebsiteSessionsByWeek();
+            CategoryDataset ds2 = createDSWebsiteDownloads(raw2, rawWebsiteSessionsByWeek);
             String title2 = createTitleWebsiteDownloads(raw2);
-            LineChart chart2 = new LineChart(title2, ds2);
+            LineChart chart2 = new LineChart(title2, ds2, "Week", "Count");
             
             generator.generateAndSaveChart(chart2, "website_downloads.png");            
         } catch (Exception e) {
@@ -121,55 +124,60 @@ public class GAVisualizer {
     
    private static String createTitleWebsiteDownloads(GaData raw)
     {
-        return "Total (1/1/2012 - 2/22/2015)";
+        return "Web Site Visits (cytoscape.org) and Cytoscape Downloads (via download.php) (2012 - 2015)"; // TODO: Make this dynamic
     }
     
-    private static CategoryDataset createDSWebsiteDownloads(GaData raw)
+    private static CategoryDataset createDSWebsiteDownloads(GaData raw, GaData rawWebsiteSessionsByWeek)
     {
-        final String series1 = "First";
-        final String series2 = "Second";
-        final String series3 = "Third";
-
-        // column keys...
-        final String type1 = "Type 1";
-        final String type2 = "Type 2";
-        final String type3 = "Type 3";
-        final String type4 = "Type 4";
-        final String type5 = "Type 5";
-        final String type6 = "Type 6";
-        final String type7 = "Type 7";
-        final String type8 = "Type 8";
-
         // create the dataset...
         final DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-
-        dataset.addValue(1.0, series1, type1);
-        dataset.addValue(4.0, series1, type2);
-        dataset.addValue(3.0, series1, type3);
-        dataset.addValue(5.0, series1, type4);
-        dataset.addValue(5.0, series1, type5);
-        dataset.addValue(7.0, series1, type6);
-        dataset.addValue(7.0, series1, type7);
-        dataset.addValue(8.0, series1, type8);
-
-        dataset.addValue(5.0, series2, type1);
-        dataset.addValue(7.0, series2, type2);
-        dataset.addValue(6.0, series2, type3);
-        dataset.addValue(8.0, series2, type4);
-        dataset.addValue(4.0, series2, type5);
-        dataset.addValue(4.0, series2, type6);
-        dataset.addValue(2.0, series2, type7);
-        dataset.addValue(1.0, series2, type8);
-
-        dataset.addValue(4.0, series3, type1);
-        dataset.addValue(3.0, series3, type2);
-        dataset.addValue(2.0, series3, type3);
-        dataset.addValue(3.0, series3, type4);
-        dataset.addValue(6.0, series3, type5);
-        dataset.addValue(3.0, series3, type6);
-        dataset.addValue(4.0, series3, type7);
-        dataset.addValue(3.0, series3, type8);
-
+        
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+        Date d;
+        try
+        {
+            d = sdf.parse("1/1/2012");
+        }
+        catch(Exception e)
+        {
+            
+        }
+        
+        int year = 2012; // TODO: pull year from FromDate
+        final int weeksInYear = 52;
+        
+        if (rawWebsiteSessionsByWeek != null && !rawWebsiteSessionsByWeek.getRows().isEmpty()) {
+            List<List<String>> rows = rawWebsiteSessionsByWeek.getRows();
+            
+            int count = 0;
+            for (List<String> r : rows)
+            {
+                dataset.addValue(Integer.parseInt(r.get(1)), year + " Visits", Integer.toString(count));
+                count++;
+                if (count >= weeksInYear)
+                {
+                    count = 0;
+                    year++;
+                }
+            }
+        }        
+        
+        if (raw != null && !raw.getRows().isEmpty()) {
+            List<List<String>> rows = raw.getRows();
+            
+            int count = 0;
+            for (List<String> r : rows)
+            {
+                dataset.addValue(Integer.parseInt(r.get(1)), year + " Downloads", Integer.toString(count));
+                count++;
+                if (count >= weeksInYear)
+                {
+                    count = 0;
+                    year++;
+                }
+            }
+        }
+        
         return dataset;
     }    
 }
