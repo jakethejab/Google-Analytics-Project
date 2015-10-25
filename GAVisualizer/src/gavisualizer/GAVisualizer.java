@@ -25,145 +25,151 @@ import com.google.api.services.analytics.model.Webproperties;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.PiePlot;
 import org.jfree.chart.plot.PiePlot3D;
+import org.jfree.chart.labels.StandardPieSectionLabelGenerator;
 import org.jfree.data.general.DefaultPieDataset;
 import org.jfree.data.general.PieDataset;
 import org.jfree.util.Rotation;
+import org.jfree.data.category.CategoryDataset;
+import org.jfree.data.category.DefaultCategoryDataset;
 
+import java.util.List;
 import java.io.File;
 import java.io.IOException;
 import org.jfree.chart.ChartUtilities;
 
+import java.text.NumberFormat;
 /**
  * A simple example of how to access the Google Analytics API using a service
  * account.
  */
 public class GAVisualizer {
 
-    private static final String APPLICATION_NAME = "Hello Analytics";
-    private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
-    private static final String KEY_FILE_LOCATION = "client_secrets.p12";
-    private static final String SERVICE_ACCOUNT_EMAIL = "305995695505-e7pjemg78c8hhpk0j2p2f28gd5487eiv@developer.gserviceaccount.com";
-
+    private static final int SHOW_COUNTRY_COUNT = 10;
+    
     public static void main(String[] args) {
         try {
-            Analytics analytics = initializeAnalytics();
-
-            String profile = getFirstProfileId(analytics);
-            System.out.println("First Profile Id: " + profile);
-            printResults(getResults(analytics, profile));
-            getSessionsByCountry(analytics, profile);
-            chartTest();
+            ChartGenerator generator = new ChartGenerator("", 1100, 900);
+            GoogleApiManager api = new GoogleApiManager();
+            
+            // PieChart - Sessions by Country
+            GaData raw = api.getSessionsByCountry();
+            PieDataset ds1 = createDSSessionsByCountry(raw);
+            String title = createTitleSessionsByCountry(raw);
+            PieChart chart1 = new PieChart(title, ds1);
+            
+            generator.generateAndSaveChart(chart1, "sessions_by_country.png");
+            
+            // LineChart - Sessions by Country
+            GaData raw2 = api.getWebsiteDownloads();
+            CategoryDataset ds2 = createDSWebsiteDownloads(raw2);
+            String title2 = createTitleWebsiteDownloads(raw2);
+            LineChart chart2 = new LineChart(title2, ds2);
+            
+            generator.generateAndSaveChart(chart2, "website_downloads.png");            
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-
-    private static void chartTest() throws IOException {
-        DefaultPieDataset result = new DefaultPieDataset();
-        result.setValue("Linux", 29);
-        result.setValue("Mac", 20);
-        result.setValue("Windows", 51);
-        
-        PieDataset dataset = result;
-        
-        JFreeChart chart = ChartFactory.createPieChart3D("Test",          // chart title
-            dataset,                // data
-            true,                   // include legend
-            true,
-            false);
-
-        PiePlot3D plot = (PiePlot3D) chart.getPlot();
-        plot.setStartAngle(290);
-        plot.setDirection(Rotation.CLOCKWISE);
-        plot.setForegroundAlpha(0.5f);
-        
-        ChartUtilities.saveChartAsPNG(new File("yo.png"), chart, 400, 300);
-    }
-
-    private static Analytics initializeAnalytics() throws Exception {
-    // Initializes an authorized analytics service object.
-
-    // Construct a GoogleCredential object with the service account email
-        // and p12 file downloaded from the developer console.
-        HttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
-        GoogleCredential credential = new GoogleCredential.Builder()
-                .setTransport(httpTransport)
-                .setJsonFactory(JSON_FACTORY)
-                .setServiceAccountId(SERVICE_ACCOUNT_EMAIL)
-                .setServiceAccountPrivateKeyFromP12File(new File(KEY_FILE_LOCATION))
-                .setServiceAccountScopes(AnalyticsScopes.all())
-                .build();
-
-        // Construct the Analytics service object.
-        return new Analytics.Builder(httpTransport, JSON_FACTORY, credential)
-                .setApplicationName(APPLICATION_NAME).build();
-    }
-
-    private static String getFirstProfileId(Analytics analytics) throws IOException {
-        // Get the first view (profile) ID for the authorized user.
-        String profileId = null;
-
-        // Query for the list of all accounts associated with the service account.
-        Accounts accounts = analytics.management().accounts().list().execute();
-
-        if (accounts.getItems().isEmpty()) {
-            System.err.println("No accounts found");
-        } else {
-            String firstAccountId = accounts.getItems().get(0).getId();
-
-            // Query for the list of properties associated with the first account.
-            Webproperties properties = analytics.management().webproperties()
-                    .list(firstAccountId).execute();
-
-            if (properties.getItems().isEmpty()) {
-                System.err.println("No Webproperties found");
-            } else {
-                String firstWebpropertyId = properties.getItems().get(0).getId();
-
-                // Query for the list views (profiles) associated with the property.
-                Profiles profiles = analytics.management().profiles()
-                        .list(firstAccountId, firstWebpropertyId).execute();
-
-                if (profiles.getItems().isEmpty()) {
-                    System.err.println("No views (profiles) found");
-                } else {
-                    // Return the first (view) profile associated with the property.
-                    profileId = profiles.getItems().get(0).getId();
-                }
-            }
+    
+    private static String createTitleSessionsByCountry(GaData raw)
+    {
+        int total = 0;
+        if (raw != null && !raw.getRows().isEmpty()) {
+            List<List<String>> rows = raw.getRows();
+            for (List<String> r : rows)
+            {
+                total += Integer.parseInt(r.get(1));
+            }       
         }
-        return profileId;
+        
+        NumberFormat nf = NumberFormat.getInstance();
+        
+        return "Total " + nf.format(total) + " (1/1/2012 - 2/22/2015)"; // TODO: pull date range from args
     }
+    
+    private static PieDataset createDSSessionsByCountry(GaData raw)
+    {
+        DefaultPieDataset result = new DefaultPieDataset();
+        if (raw != null && !raw.getRows().isEmpty()) {
+            List<List<String>> rows = raw.getRows();
+            
+            int count = 0;
+            int otherVal = 0;
+            for (List<String> r : rows)
+            {
+                if (count <= SHOW_COUNTRY_COUNT) // Show the top 10 countries in chart
+                {
+                    result.setValue(r.get(0), Integer.parseInt(r.get(1)));                    
+                }
+                else
+                {
+                    otherVal += Integer.parseInt(r.get(1));
+                }
 
-    private static GaData getResults(Analytics analytics, String profileId) throws IOException {
-        GaData data = analytics.data().ga()
-                .get("ga:" + profileId, "7daysAgo", "today", "ga:sessions")
-                .execute();
-    // Query the Core Reporting API for the number of sessions
-        // in the past seven days.
-        return data;
-    }
-
-    private static void getSessionsByCountry(Analytics analytics, String profileId) throws IOException {
-        GaData data = analytics.data().ga()
-                .get("ga:" + profileId, "40daysAgo", "today", "ga:sessions")
-                .setDimensions("ga:country")
-                .setSort("-ga:sessions")
-                .execute();
-
-        GaData test = data;
-    }
-
-    private static void printResults(GaData results) {
-    // Parse the response from the Core Reporting API for
-        // the profile name and number of sessions.
-        if (results != null && !results.getRows().isEmpty()) {
-            System.out.println("View (Profile) Name: "
-                    + results.getProfileInfo().getProfileName());
-            System.out.println("Total Sessions: " + results.getRows().get(0).get(0));
+                count++;
+            }
+            
+            result.setValue("Other", otherVal);
         } else {
             System.out.println("No results found");
         }
+        
+        return result;
     }
+    
+   private static String createTitleWebsiteDownloads(GaData raw)
+    {
+        return "Total (1/1/2012 - 2/22/2015)";
+    }
+    
+    private static CategoryDataset createDSWebsiteDownloads(GaData raw)
+    {
+        final String series1 = "First";
+        final String series2 = "Second";
+        final String series3 = "Third";
+
+        // column keys...
+        final String type1 = "Type 1";
+        final String type2 = "Type 2";
+        final String type3 = "Type 3";
+        final String type4 = "Type 4";
+        final String type5 = "Type 5";
+        final String type6 = "Type 6";
+        final String type7 = "Type 7";
+        final String type8 = "Type 8";
+
+        // create the dataset...
+        final DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+
+        dataset.addValue(1.0, series1, type1);
+        dataset.addValue(4.0, series1, type2);
+        dataset.addValue(3.0, series1, type3);
+        dataset.addValue(5.0, series1, type4);
+        dataset.addValue(5.0, series1, type5);
+        dataset.addValue(7.0, series1, type6);
+        dataset.addValue(7.0, series1, type7);
+        dataset.addValue(8.0, series1, type8);
+
+        dataset.addValue(5.0, series2, type1);
+        dataset.addValue(7.0, series2, type2);
+        dataset.addValue(6.0, series2, type3);
+        dataset.addValue(8.0, series2, type4);
+        dataset.addValue(4.0, series2, type5);
+        dataset.addValue(4.0, series2, type6);
+        dataset.addValue(2.0, series2, type7);
+        dataset.addValue(1.0, series2, type8);
+
+        dataset.addValue(4.0, series3, type1);
+        dataset.addValue(3.0, series3, type2);
+        dataset.addValue(2.0, series3, type3);
+        dataset.addValue(3.0, series3, type4);
+        dataset.addValue(6.0, series3, type5);
+        dataset.addValue(3.0, series3, type6);
+        dataset.addValue(4.0, series3, type7);
+        dataset.addValue(3.0, series3, type8);
+
+        return dataset;
+    }    
 }
