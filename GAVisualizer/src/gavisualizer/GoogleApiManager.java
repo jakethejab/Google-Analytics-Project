@@ -63,7 +63,15 @@ public class GoogleApiManager {
                 .setFilters("ga:pagePath=@/download.php;ga:hostName=~(.*)")
                 .setDimensions("ga:nthWeek")
                 .execute();
-    }    
+    }
+    
+      public GaData getWebsiteReferralSources() throws IOException {
+        return _analytics.data().ga()
+                .get("ga:" + _profile, "2012-01-01", "2015-02-22", "ga:sessions")
+                .setDimensions("ga:sourceMedium")
+                .setSort("-ga:sessions")
+                .execute();
+    }  
 
     private Analytics initializeAnalytics() throws Exception {
     // Initializes an authorized analytics service object.

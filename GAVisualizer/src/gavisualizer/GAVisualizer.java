@@ -49,6 +49,7 @@ import java.util.Date;
 public class GAVisualizer {
 
     private static final int SHOW_COUNTRY_COUNT = 10;
+    private static final int SHOW_REFERRAL_SOURCES_COUNT = 10;
     
     public static void main(String[] args) {
         try {
@@ -70,11 +71,64 @@ public class GAVisualizer {
             String title2 = createTitleWebsiteDownloads(raw2);
             LineChart chart2 = new LineChart(title2, ds2, "Week", "Count");
             
-            generator.generateAndSaveChart(chart2, "website_downloads.png");            
+            generator.generateAndSaveChart(chart2, "website_downloads.png");
+            
+            // PieChart - Sessions by Country
+            GaData raw3 = api.getWebsiteReferralSources();
+            PieDataset ds3 = createDSWebsiteReferralSources(raw3);
+            String title3 = createTitleWebsiteReferralSources(raw3);
+            PieChart chart3 = new PieChart(title3, ds3);
+            
+            generator.generateAndSaveChart(chart3, "website_referral_sources.png");            
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+    
+    private static PieDataset createDSWebsiteReferralSources(GaData raw3)
+    {
+        DefaultPieDataset result = new DefaultPieDataset();
+        if (raw3 != null && !raw3.getRows().isEmpty()) {
+            List<List<String>> rows = raw3.getRows();
+            
+            int count = 0;
+            int otherVal = 0;
+            for (List<String> r : rows)
+            {
+                if (count <= SHOW_REFERRAL_SOURCES_COUNT) // Show the top 10 countries in chart
+                {
+                    result.setValue(r.get(0), Integer.parseInt(r.get(1)));                    
+                }
+                else
+                {
+                    otherVal += Integer.parseInt(r.get(1));
+                }
+                count++;
+            }
+            
+            result.setValue("Other", otherVal);
+        } else {
+            System.out.println("No results found");
+        }
+        
+        return result;
+    }
+    
+    private static String createTitleWebsiteReferralSources(GaData raw3)
+    {
+        int total = 0;
+        if (raw3 != null && !raw3.getRows().isEmpty()) {
+            List<List<String>> rows = raw3.getRows();
+            for (List<String> r : rows)
+            {
+                total += Integer.parseInt(r.get(1));
+            }       
+        }
+        
+        NumberFormat nf = NumberFormat.getInstance();
+        
+        return "Total " + nf.format(total) + " (1/1/2012 - 2/22/2015)"; // TODO: pull date range from args
+    }    
     
     private static String createTitleSessionsByCountry(GaData raw)
     {
