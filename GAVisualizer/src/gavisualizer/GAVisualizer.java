@@ -73,7 +73,7 @@ public class GAVisualizer {
             
             generator.generateAndSaveChart(chart2, "website_downloads.png");
             
-            // PieChart - Sessions by Country
+            // PieChart - website referral sources
             GaData raw3 = api.getWebsiteReferralSources();
             PieDataset ds3 = createDSWebsiteReferralSources(raw3);
             String title3 = createTitleWebsiteReferralSources(raw3);
