@@ -194,7 +194,7 @@ public class GAVisualizer {
         }
         catch(Exception e)
         {
-            
+            // test
         }
         
         int year = 2012; // TODO: pull year from FromDate
@@ -217,12 +217,14 @@ public class GAVisualizer {
         }        
         
         if (raw != null && !raw.getRows().isEmpty()) {
+            year = 2012;
+            
             List<List<String>> rows = raw.getRows();
             
             int count = 0;
             for (List<String> r : rows)
             {
-                dataset.addValue(Integer.parseInt(r.get(1)), year + " Downloads", Integer.toString(count));
+                dataset.addValue(Integer.parseInt(r.get(2)), year + " Downloads", Integer.toString(count));
                 count++;
                 if (count >= weeksInYear)
                 {

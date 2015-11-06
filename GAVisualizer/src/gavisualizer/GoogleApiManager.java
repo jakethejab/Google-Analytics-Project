@@ -60,8 +60,9 @@ public class GoogleApiManager {
     public GaData getWebsiteDownloads() throws IOException {
         return _analytics.data().ga()
                 .get("ga:" + _profile, "2012-01-01", "2015-02-22", "ga:pageviews")
-                .setFilters("ga:pagePath=@/download.php;ga:hostName=~(.*)")
-                .setDimensions("ga:nthWeek")
+                .setFilters("ga:pagePath==/download.php")
+                .setDimensions("ga:pagePath,ga:nthWeek")
+                .setSort("ga:nthWeek")
                 .execute();
     }
     
