@@ -50,6 +50,7 @@ import java.util.Date;
 public class GAVisualizer {
 
     private static final int MAX_COUNT = 10;
+    private static final int MAX_CATEGORIES = 6;
     
     public static void main(String[] args) {
         try {
@@ -95,34 +96,29 @@ public class GAVisualizer {
             String title5 = createTitleAppReferralSources(raw5);
             PieChart chart5 = new PieChart(title5, ds5);
             
-            generator.generateAndSaveChart(chart5, "appstore_referrals_by_source.png");    
+            generator.generateAndSaveChart(chart5, "appstore_referrals_by_source.png");
+            
+            // LineChart - App Store Visits per Week
+            GaData raw6 = api.getAppSessionsByWeek();
+            CategoryDataset ds6 = createDSVisits(raw6);
+            String title6 = createTitleAppSessionsByWeek(raw6);
+            LineChart chart6 = new LineChart(title6, ds6, "Week", "Count");
+            
+            generator.generateAndSaveChart(chart6, "appstore_visits_per_week.png");
+            
+            // PieChart - Top App Store Attractions by Category
+            GaData raw7 = api.getAppAttractionsByCategory();
+            PieDataset ds7 = createPieDatasetCategories(raw7);
+            String title7 = createTitleAppAttractionsByCategory(raw7);
+            PieChart chart7 = new PieChart(title7, ds7);
+            
+            generator.generateAndSaveChart(chart7, "top_appstore_attractions_by_category.png");
         } 
         catch (Exception e) {
             e.printStackTrace();
         }
     }
-    
-    private static String createTitleWebsiteReferralSources(GaData raw3)
-    {
-        int total = 0;
-        if (raw3 != null && !raw3.getRows().isEmpty()) {
-            List<List<String>> rows = raw3.getRows();
-            for (List<String> r : rows)
-            {
-                total += Integer.parseInt(r.get(1));
-            }       
-        }
-        
-        NumberFormat nf = NumberFormat.getInstance();
-        
-        return "Total " + nf.format(total) + " (1/1/2012 - 2/22/2015)"; // TODO: pull date range from args
-    }    
-    
-    private static String createTitleSessionsByCountry(GaData raw)
-    {
-        return "Web Site Sessions (" + getTotal(raw) + ") (" + formatDate(raw.getQuery().getStartDate()) + " through " + formatDate(raw.getQuery().getEndDate()) + ")";
-    }
-    
+
     //NOTE! I created one method for this so we don't repeat it unnecessarily (George) 
     private static PieDataset createPieDataset(GaData raw)
     {
@@ -154,28 +150,65 @@ public class GAVisualizer {
         return result;
     }
     
-   private static String createTitleWebsiteDownloads(GaData raw)
+    private static PieDataset createPieDatasetCategories(GaData raw)
     {
-        return "Web Site Visits (cytoscape.org) and Cytoscape Downloads (via download.php) (" + getYear(raw.getQuery().getStartDate()) + " - " + getYear(raw.getQuery().getEndDate()) + ")";
+        DefaultPieDataset result = new DefaultPieDataset();
+        if (raw != null && !raw.getRows().isEmpty()) {
+            List<List<String>> rows = raw.getRows();
+            
+            int count = 0;
+            for (List<String> r : rows)
+            {
+                if (count <= MAX_CATEGORIES) // Show the top 6
+                {
+                    result.setValue(r.get(0), Integer.parseInt(r.get(1)));                    
+                }
+                else
+                {
+                    break;
+                }
+
+                count++;
+            }
+        } else {
+            System.out.println("No results found");
+        }
+        
+        return result;
     }
+    
+    private static CategoryDataset createDSVisits(GaData raw)
+    {
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+        
+        int year = Integer.parseInt(getYear(raw.getQuery().getStartDate()));
+        final int weeksInYear = 52;
+        
+        if (raw != null && !raw.getRows().isEmpty()) {
+            List<List<String>> rows = raw.getRows();
+            
+            int count = 0;
+            for (List<String> r : rows)
+            {
+                dataset.addValue(Integer.parseInt(r.get(1)), year + " Visits", Integer.toString(count));
+                count++;
+                if (count >= weeksInYear)
+                {
+                    count = 0;
+                    year++;
+                }
+            }
+        }
+        
+        return dataset;
+    }  
     
     private static CategoryDataset createDSWebsiteDownloads(GaData raw, GaData rawWebsiteSessionsByWeek)
     {
         // create the dataset...
         final DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-        
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-        Date d;
-        try
-        {
-            d = sdf.parse("1/1/2012");
-        }
-        catch(Exception e)
-        {
-            // test
-        }
-        
-        int year = 2012; // TODO: pull year from FromDate
+
+        int year = Integer.parseInt(getYear(raw.getQuery().getStartDate()));
         final int weeksInYear = 52;
         
         if (rawWebsiteSessionsByWeek != null && !rawWebsiteSessionsByWeek.getRows().isEmpty()) {
@@ -195,7 +228,7 @@ public class GAVisualizer {
         }        
         
         if (raw != null && !raw.getRows().isEmpty()) {
-            year = 2012;
+            year = Integer.parseInt(getYear(raw.getQuery().getStartDate()));
             
             List<List<String>> rows = raw.getRows();
             
@@ -215,6 +248,21 @@ public class GAVisualizer {
         return dataset;
     }
     
+    private static String createTitleWebsiteReferralSources(GaData raw)
+    {
+        return "Web Site Referral Sources (" + getTotal(raw) + ") (" + formatDate(raw.getQuery().getStartDate()) + " through " + formatDate(raw.getQuery().getEndDate()) + ")";
+    }    
+
+    private static String createTitleSessionsByCountry(GaData raw)
+    {
+        return "Web Site Sessions (" + getTotal(raw) + ") (" + formatDate(raw.getQuery().getStartDate()) + " through " + formatDate(raw.getQuery().getEndDate()) + ")";
+    }
+    
+    private static String createTitleWebsiteDownloads(GaData raw)
+    {
+        return "Web Site Visits (cytoscape.org) and Cytoscape Downloads (via download.php) (" + getYear(raw.getQuery().getStartDate()) + " - " + getYear(raw.getQuery().getEndDate()) + ")";
+    }
+      
     private static String createTitleAppSessionsByCountry(GaData raw)
     {     
         return "App Store Visits (" + getTotal(raw) + ") (" + formatDate(raw.getQuery().getStartDate()) + " through " + formatDate(raw.getQuery().getEndDate()) + ")";
@@ -223,6 +271,16 @@ public class GAVisualizer {
     private static String createTitleAppReferralSources(GaData raw)
     {
         return "App Store Referral Sources (" + getTotal(raw) + ") (" + formatDate(raw.getQuery().getStartDate()) + " through " + formatDate(raw.getQuery().getEndDate()) + ")";
+    }
+    
+    private static String createTitleAppSessionsByWeek(GaData raw)
+    {
+        return "App Store Visits per Week (" + getTotal(raw) + ") (" + formatDate(raw.getQuery().getStartDate()) + " through " + formatDate(raw.getQuery().getEndDate()) + ")";
+    }
+    
+    private static String createTitleAppAttractionsByCategory(GaData raw)
+    {
+        return "Top App Store Attractions by Category (" + getTotal(raw) + ") (" + formatDate(raw.getQuery().getStartDate()) + " through " + formatDate(raw.getQuery().getEndDate()) + ")";
     }
     
     //NOTE! I added this to reduce redundancy. I will add to SDD and the two below (George)
@@ -241,7 +299,7 @@ public class GAVisualizer {
         return nf.format(total);
     }
     
-    //NOTE! I added this to format dates as they are currently read on existing charts (George)
+    //NOTE! I added this to format dates different than GA keeps them (George)
     private static String formatDate(String date)
     {
         //create a format to read Google Analytics date format
@@ -263,7 +321,7 @@ public class GAVisualizer {
         return write.format(d).toString();
     }
     
-    //NOTE! I added this to format dates as they are currently read on existing charts (George)
+    //NOTE! I added this to format year different than GA keeps them (George)
     private static String getYear(String date)
     {
         //create a format to read Google Analytics date format
