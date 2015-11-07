@@ -69,7 +69,7 @@ public class GoogleApiManager {
     //Extracts data for App Store Sessions by Country
     public GaData getAppSessionsByCountry() throws IOException {  
         return _analytics.data().ga()
-                .get("ga:" + _profile, "2012-06-01", /*"today"*/ "2015-02-22", "ga:sessions")
+                .get("ga:61043731", "2012-06-01", /*"today"*/ "2015-02-22", "ga:sessions")
                 .setDimensions("ga:country")
                 .setSort("-ga:sessions")
                 .execute();
@@ -78,7 +78,7 @@ public class GoogleApiManager {
     //Extracts data for App Store Referral Sources
     public GaData getAppReferralSources() throws IOException {
         return _analytics.data().ga()
-                .get("ga:" + _profile, "2012-06-01", /*"today"*/ "2015-02-22", "ga:sessions")
+                .get("ga:61043731", "2012-06-01", /*"today"*/ "2015-02-22", "ga:sessions")
                 .setDimensions("ga:sourceMedium")
                 .setSort("-ga:sessions")
                 .execute();
