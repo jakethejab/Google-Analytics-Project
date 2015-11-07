@@ -75,7 +75,7 @@ public class GAVisualizer {
             
             // PieChart - Website Referral Sources
             GaData raw3 = api.getWebsiteReferralSources();
-            PieDataset ds3 = createDSWebsiteReferralSources(raw3);
+            PieDataset ds3 = createPieDataset(raw3);
             String title3 = createTitleWebsiteReferralSources(raw3);
             PieChart chart3 = new PieChart(title3, ds3);
             
@@ -100,35 +100,6 @@ public class GAVisualizer {
         catch (Exception e) {
             e.printStackTrace();
         }
-    }
-    
-    private static PieDataset createDSWebsiteReferralSources(GaData raw3)
-    {
-        DefaultPieDataset result = new DefaultPieDataset();
-        if (raw3 != null && !raw3.getRows().isEmpty()) {
-            List<List<String>> rows = raw3.getRows();
-            
-            int count = 0;
-            int otherVal = 0;
-            for (List<String> r : rows)
-            {
-                if (count <= SHOW_REFERRAL_SOURCES_COUNT) // Show the top 10 countries in chart
-                {
-                    result.setValue(r.get(0), Integer.parseInt(r.get(1)));                    
-                }
-                else
-                {
-                    otherVal += Integer.parseInt(r.get(1));
-                }
-                count++;
-            }
-            
-            result.setValue("Other", otherVal);
-        } else {
-            System.out.println("No results found");
-        }
-        
-        return result;
     }
     
     private static String createTitleWebsiteReferralSources(GaData raw3)
