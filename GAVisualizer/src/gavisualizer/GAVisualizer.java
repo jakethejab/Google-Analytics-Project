@@ -318,7 +318,7 @@ public class GAVisualizer {
         DateFormat write = new SimpleDateFormat("MM/dd/yyyy");
         
         //return the date with the expected output format
-        return write.format(d).toString();
+        return write.format(d);
     }
     
     //NOTE! I added this to format year different than GA keeps them (George)
@@ -340,6 +340,6 @@ public class GAVisualizer {
         DateFormat write = new SimpleDateFormat("yyyy");
         
         //return year
-        return write.format(d).toString();
+        return write.format(d);
     }
 }
