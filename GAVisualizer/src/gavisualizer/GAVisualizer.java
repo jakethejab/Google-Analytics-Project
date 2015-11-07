@@ -71,29 +71,81 @@ public class GAVisualizer {
             String title2 = createTitleWebsiteDownloads(raw2);
             LineChart chart2 = new LineChart(title2, ds2, "Week", "Count");
             
-            generator.generateAndSaveChart(chart2, "website_downloads.png");  
+            generator.generateAndSaveChart(chart2, "website_downloads.png");
             
-            // PieChart - App Store Sessions by Country
-            GaData raw3 = api.getAppSessionsByCountry();
-            PieDataset ds3 = createPieDataset(raw3);
-            String title3 = createTitleAppSessionsByCountry(raw3);
+            // PieChart - Website Referral Sources
+            GaData raw3 = api.getWebsiteReferralSources();
+            PieDataset ds3 = createDSWebsiteReferralSources(raw3);
+            String title3 = createTitleWebsiteReferralSources(raw3);
             PieChart chart3 = new PieChart(title3, ds3);
             
-            generator.generateAndSaveChart(chart3, "appstore_sessions_by_country.png");
+            generator.generateAndSaveChart(chart3, "website_referral_sources.png");  
             
-            // PieChart - App Store Referral Sources
-            GaData raw4 = api.getAppReferralSources();
+            // PieChart - App Store Sessions by Country
+            GaData raw4 = api.getAppSessionsByCountry();
             PieDataset ds4 = createPieDataset(raw4);
-            String title4 = createTitleAppReferralSources(raw4);
+            String title4 = createTitleAppSessionsByCountry(raw4);
             PieChart chart4 = new PieChart(title4, ds4);
             
-            generator.generateAndSaveChart(chart4, "appstore_referrals_by_source.png");
+            generator.generateAndSaveChart(chart4, "appstore_sessions_by_country.png");
             
+            // PieChart - App Store Referral Sources
+            GaData raw5 = api.getAppReferralSources();
+            PieDataset ds5 = createPieDataset(raw5);
+            String title5 = createTitleAppReferralSources(raw5);
+            PieChart chart5 = new PieChart(title5, ds5);
+            
+            generator.generateAndSaveChart(chart5, "appstore_referrals_by_source.png");    
         } 
         catch (Exception e) {
             e.printStackTrace();
         }
     }
+    
+    private static PieDataset createDSWebsiteReferralSources(GaData raw3)
+    {
+        DefaultPieDataset result = new DefaultPieDataset();
+        if (raw3 != null && !raw3.getRows().isEmpty()) {
+            List<List<String>> rows = raw3.getRows();
+            
+            int count = 0;
+            int otherVal = 0;
+            for (List<String> r : rows)
+            {
+                if (count <= SHOW_REFERRAL_SOURCES_COUNT) // Show the top 10 countries in chart
+                {
+                    result.setValue(r.get(0), Integer.parseInt(r.get(1)));                    
+                }
+                else
+                {
+                    otherVal += Integer.parseInt(r.get(1));
+                }
+                count++;
+            }
+            
+            result.setValue("Other", otherVal);
+        } else {
+            System.out.println("No results found");
+        }
+        
+        return result;
+    }
+    
+    private static String createTitleWebsiteReferralSources(GaData raw3)
+    {
+        int total = 0;
+        if (raw3 != null && !raw3.getRows().isEmpty()) {
+            List<List<String>> rows = raw3.getRows();
+            for (List<String> r : rows)
+            {
+                total += Integer.parseInt(r.get(1));
+            }       
+        }
+        
+        NumberFormat nf = NumberFormat.getInstance();
+        
+        return "Total " + nf.format(total) + " (1/1/2012 - 2/22/2015)"; // TODO: pull date range from args
+    }    
     
     private static String createTitleSessionsByCountry(GaData raw)
     {
