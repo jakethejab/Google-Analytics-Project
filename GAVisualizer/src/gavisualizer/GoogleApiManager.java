@@ -30,15 +30,18 @@ import java.util.Date;
 public class GoogleApiManager {
     private static final String APPLICATION_NAME = "Hello Analytics";
     private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
-    private static final String KEY_FILE_LOCATION = "client_secrets.p12";
-    private static final String SERVICE_ACCOUNT_EMAIL = "305995695505-e7pjemg78c8hhpk0j2p2f28gd5487eiv@developer.gserviceaccount.com";
+    private static final String START_DATE = "2012-01-01";
     private Analytics _analytics;
     private String _CytoscapeProfile;
     private String _AppstoreProfile;
+    private String _certificatePath;
+    private String _serviceAccountEmail;
     
-    GoogleApiManager() {
+    GoogleApiManager(String certificatePath, String serviceAccountEmail) {
         try
         {
+            _certificatePath = certificatePath;
+            _serviceAccountEmail = serviceAccountEmail;            
             _analytics = initializeAnalytics();
             _CytoscapeProfile = getFirstProfileId();
             _AppstoreProfile = getSecondProfileId();
@@ -49,7 +52,7 @@ public class GoogleApiManager {
     
     public GaData getSessionsByCountry() throws IOException {
         return _analytics.data().ga()
-                .get("ga:" + _CytoscapeProfile, "2012-01-01", getToday(), "ga:sessions")
+                .get("ga:" + _CytoscapeProfile, START_DATE, getToday(), "ga:sessions")
                 .setDimensions("ga:country")
                 .setSort("-ga:sessions")
                 .execute();
@@ -57,7 +60,7 @@ public class GoogleApiManager {
     
     public GaData getWebsiteReferralSources() throws IOException {
         return _analytics.data().ga()
-                .get("ga:" + _CytoscapeProfile, "2012-01-01", getToday(), "ga:sessions")
+                .get("ga:" + _CytoscapeProfile, START_DATE, getToday(), "ga:sessions")
                 .setDimensions("ga:sourceMedium")
                 .setSort("-ga:sessions")
                 .execute();
@@ -65,14 +68,14 @@ public class GoogleApiManager {
     
     public GaData getWebsiteSessionsByWeek() throws IOException {
         return _analytics.data().ga()
-                .get("ga:" + _CytoscapeProfile, "2012-01-01", getToday(), "ga:sessions")
+                .get("ga:" + _CytoscapeProfile, START_DATE, getToday(), "ga:sessions")
                 .setDimensions("ga:nthWeek")
                 .execute();
     }     
     
     public GaData getWebsiteDownloads() throws IOException {
         return _analytics.data().ga()
-                .get("ga:" + _CytoscapeProfile, "2012-01-01", getToday(), "ga:pageviews")
+                .get("ga:" + _CytoscapeProfile, START_DATE, getToday(), "ga:pageviews")
                 .setFilters("ga:pagePath==/download.php")
                 .setDimensions("ga:pagePath,ga:nthWeek")
                 .setSort("ga:nthWeek")
@@ -100,7 +103,7 @@ public class GoogleApiManager {
     //Extracts data for App Store Visits by Week
     public GaData getAppSessionsByWeek () throws IOException {
         return _analytics.data().ga()
-                .get("ga:" + _AppstoreProfile, "2012-01-01", getToday(), "ga:sessions")
+                .get("ga:" + _AppstoreProfile, START_DATE, getToday(), "ga:sessions")
                 .setDimensions("ga:nthWeek")
                 .execute();
     }
@@ -124,8 +127,8 @@ public class GoogleApiManager {
         GoogleCredential credential = new GoogleCredential.Builder()
                 .setTransport(httpTransport)
                 .setJsonFactory(JSON_FACTORY)
-                .setServiceAccountId(SERVICE_ACCOUNT_EMAIL)
-                .setServiceAccountPrivateKeyFromP12File(new File(KEY_FILE_LOCATION))
+                .setServiceAccountId(_serviceAccountEmail)
+                .setServiceAccountPrivateKeyFromP12File(new File(_certificatePath))
                 .setServiceAccountScopes(AnalyticsScopes.all())
                 .build();
 

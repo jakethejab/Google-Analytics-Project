@@ -43,6 +43,9 @@ import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.*;
+import java.io.FileReader;
+
 /**
  * A simple example of how to access the Google Analytics API using a service
  * account.
@@ -54,8 +57,28 @@ public class GAVisualizer {
     
     public static void main(String[] args) {
         try {
-            ChartGenerator generator = new ChartGenerator("", 1200, 800);
-            GoogleApiManager api = new GoogleApiManager();
+            args = new String[1];
+            args[0] = "src\\gavisualizer\\app.properties";
+            
+            String configFilePath = "";
+            if (args.length > 0)
+            {
+                configFilePath = args[0];
+            }
+            
+            // Loads in the app.properties file
+            Properties prop = new Properties();
+            FileReader reader = new FileReader(configFilePath);
+            prop.load(reader);
+            
+            int imageWidth = Integer.parseInt(prop.getProperty("imageWidth"));
+            int imageHeight = Integer.parseInt(prop.getProperty("imageHeight"));
+            String outputPath = prop.getProperty("outputPath");
+            String certificatePath = prop.getProperty("certificatePath");
+            String serviceAccountEmail = prop.getProperty("serviceAccountEmail");
+            
+            ChartGenerator generator = new ChartGenerator(outputPath, imageWidth, imageHeight);
+            GoogleApiManager api = new GoogleApiManager(certificatePath, serviceAccountEmail);
             
             // PieChart - Sessions by Country
             GaData raw = api.getSessionsByCountry();
