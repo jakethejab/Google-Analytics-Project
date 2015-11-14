@@ -142,7 +142,6 @@ public class GAVisualizer {
         }
     }
 
-    //NOTE! I created one method for this so we don't repeat it unnecessarily (George) 
     private static PieDataset createPieDataset(GaData raw)
     {
         DefaultPieDataset result = new DefaultPieDataset();
@@ -306,7 +305,6 @@ public class GAVisualizer {
         return "Top App Store Attractions by Category (" + getTotal(raw) + ") (" + formatDate(raw.getQuery().getStartDate()) + " through " + formatDate(raw.getQuery().getEndDate()) + ")";
     }
     
-    //NOTE! I added this to reduce redundancy. I will add to SDD and the two below (George)
     private static String getTotal(GaData raw)
     {
         NumberFormat nf = NumberFormat.getInstance();
@@ -322,7 +320,6 @@ public class GAVisualizer {
         return nf.format(total);
     }
     
-    //NOTE! I added this to format dates different than GA keeps them (George)
     private static String formatDate(String date)
     {
         //create a format to read Google Analytics date format
@@ -344,7 +341,6 @@ public class GAVisualizer {
         return write.format(d);
     }
     
-    //NOTE! I added this to format year different than GA keeps them (George)
     private static String getYear(String date)
     {
         //create a format to read Google Analytics date format

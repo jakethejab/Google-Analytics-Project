@@ -5,6 +5,7 @@
  */
 package gavisualizer;
 
+import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import org.jfree.chart.ChartFactory;
@@ -36,14 +37,16 @@ public class PieChart implements IChart {
     {
         JFreeChart chart = ChartFactory.createPieChart(_title,          // chart title
             _dataset,                // data
-            true,                   // include legend
-            true,
+            false,                   // include legend
+            false,
             false);
-
+        
         PiePlot  plot = (PiePlot) chart.getPlot();
         plot.setDirection(Rotation.CLOCKWISE);
         plot.setForegroundAlpha(0.5f);
+        plot.setBackgroundPaint(Color.WHITE);
         plot.setLabelGenerator(new StandardPieSectionLabelGenerator("{0} {2}"));
+        plot.setOutlinePaint(Color.white);
         
         _chart = chart;
     }

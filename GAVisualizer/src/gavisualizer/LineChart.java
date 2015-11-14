@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Paint;
+import java.util.List;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -22,6 +24,7 @@ import org.jfree.chart.renderer.category.LineAndShapeRenderer;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.chart.ChartUtilities;
+import org.jfree.chart.renderer.AbstractRenderer;
 
 /**
  *
@@ -54,11 +57,39 @@ public class LineChart implements IChart {
             false                      // urls
         );
 
-        chart.setBackgroundPaint(Color.white);
+        chart.setBackgroundPaint(Color.white);  
 
         final CategoryPlot plot = (CategoryPlot) chart.getPlot();
-        plot.setBackgroundPaint(Color.lightGray);
-        plot.setRangeGridlinePaint(Color.white);
+        plot.setBackgroundPaint(Color.white);
+        plot.setRangeGridlinePaint(Color.lightGray);
+        plot.setOutlinePaint(Color.white);
+        
+        // customize the line and the stroke width of the series
+        final LineAndShapeRenderer renderer = (LineAndShapeRenderer) plot.getRenderer();
+        ((AbstractRenderer)renderer).setAutoPopulateSeriesStroke(false);
+        renderer.setBaseStroke(new BasicStroke(3));
+        
+        // include dashed lines if necessary
+        List<String> rows = _dataset.getRowKeys();
+        if(rows.get(rows.size()-1).endsWith("Downloads"))
+        {
+            int start = _dataset.getRowCount() / 2;
+            int init = 0;
+            while(start <= _dataset.getRowCount())
+            {
+                renderer.setSeriesStroke(start, 
+                        new BasicStroke(
+                        3, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 
+                        1.0f, new float[] {10.0f, 6.0f}, 0.0f
+                        ));
+                Paint p = renderer.getItemPaint(init, 1);
+                renderer.setSeriesPaint(start, p);
+                init++;
+                start++;
+            }
+        } 
+
+        plot.setRenderer(renderer);
 
         // customise the range axis...
         final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
