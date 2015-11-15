@@ -10,32 +10,42 @@ import java.io.IOException;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Paint;
 import java.util.List;
 
 import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.DefaultDrawingSupplier;
 import org.jfree.chart.renderer.category.LineAndShapeRenderer;
 import org.jfree.data.category.CategoryDataset;
-import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.renderer.AbstractRenderer;
+import org.jfree.chart.LegendItemCollection;
+import org.jfree.chart.LegendItem;
+ 
 
 /**
  *
  * @author Jake
  */
 public class LineChart implements IChart {
-    private CategoryDataset _dataset;
+    private final CategoryDataset _dataset;
     private JFreeChart _chart;
-    private String _title;
-    private String _axisLabelDomain;
-    private String _axisLabelRange;
+    private final String _title;
+    private final String _axisLabelDomain;
+    private final String _axisLabelRange;
+    
+    private static final BasicStroke DASHED_STROKE =  new BasicStroke(3, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER,
+                1.0f, new float[] {4.0f, 2.0f}, 0.0f);
+    private static final BasicStroke STROKE_WIDTH = new BasicStroke(3);
+    private static final Paint[] PAINTS = new Paint[] {
+                Color.red, Color.blue, Color.green, 
+                Color.orange, Color.magenta, 
+                Color.cyan, Color.DARK_GRAY, Color.pink
+            };
     
     LineChart(String title, CategoryDataset dataset, String axisLabelDomain, String axisLabelRange) {
         _dataset = dataset;
@@ -44,6 +54,7 @@ public class LineChart implements IChart {
         _axisLabelRange = axisLabelRange;
     }
     
+    @Override
     public void generate()
     {
         JFreeChart chart = ChartFactory.createLineChart(
@@ -57,40 +68,48 @@ public class LineChart implements IChart {
             false                      // urls
         );
 
-        chart.setBackgroundPaint(Color.white);  
-
         final CategoryPlot plot = (CategoryPlot) chart.getPlot();
         plot.setBackgroundPaint(Color.white);
         plot.setRangeGridlinePaint(Color.lightGray);
         plot.setOutlinePaint(Color.white);
         
-        // customize the line and the stroke width of the series
-        final LineAndShapeRenderer renderer = (LineAndShapeRenderer) plot.getRenderer();
+        // set paints for chart
+        LineAndShapeRenderer renderer = (LineAndShapeRenderer) plot.getRenderer();
+        DefaultDrawingSupplier dw = new DefaultDrawingSupplier(
+                PAINTS, 
+                DefaultDrawingSupplier.DEFAULT_OUTLINE_PAINT_SEQUENCE, 
+                DefaultDrawingSupplier.DEFAULT_STROKE_SEQUENCE, 
+                DefaultDrawingSupplier.DEFAULT_OUTLINE_STROKE_SEQUENCE, 
+                DefaultDrawingSupplier.DEFAULT_SHAPE_SEQUENCE 
+            );
+        plot.setDrawingSupplier(dw);
+
+        // customize stroke width of the series
         ((AbstractRenderer)renderer).setAutoPopulateSeriesStroke(false);
-        renderer.setBaseStroke(new BasicStroke(3));
+        renderer.setBaseStroke(STROKE_WIDTH);
+        renderer.setBaseShapesVisible(false);
         
         // include dashed lines if necessary
         List<String> rows = _dataset.getRowKeys();
         if(rows.get(rows.size()-1).endsWith("Downloads"))
-        {
+        {            
             int start = _dataset.getRowCount() / 2;
             int init = 0;
-            while(start <= _dataset.getRowCount())
+            while(start < _dataset.getRowCount())
             {
-                renderer.setSeriesStroke(start, 
-                        new BasicStroke(
-                        3, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 
-                        1.0f, new float[] {10.0f, 6.0f}, 0.0f
-                        ));
-                Paint p = renderer.getItemPaint(init, 1);
-                renderer.setSeriesPaint(start, p);
+                // make sure series and legend have dashes
+                renderer.setSeriesStroke(start, DASHED_STROKE); 
+                LegendItemCollection legend = renderer.getLegendItems();
+                LegendItem li = legend.get(start-1);
+                li.setLineStroke(DASHED_STROKE);
+                
+                // make sure the color matches the undashed year
+                renderer.setSeriesPaint(start, renderer.getItemPaint(init, 0));
                 init++;
                 start++;
             }
-        } 
-
-        plot.setRenderer(renderer);
-
+        }
+        
         // customise the range axis...
         final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
         rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
@@ -99,6 +118,7 @@ public class LineChart implements IChart {
         _chart = chart;
     }
     
+    @Override
     public void saveAsImage(String path, int width, int height) throws IOException
     {
         ChartUtilities.saveChartAsPNG(new File(path), _chart, width, height);  

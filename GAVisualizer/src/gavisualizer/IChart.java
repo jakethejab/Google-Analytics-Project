@@ -6,7 +6,6 @@
 package gavisualizer;
 
 import java.io.IOException;
-import org.jfree.chart.JFreeChart;
 
 /**
  *

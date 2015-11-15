@@ -9,13 +9,10 @@ import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartPanel;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.labels.StandardPieSectionLabelGenerator;
 import org.jfree.chart.plot.PiePlot;
-import org.jfree.chart.plot.PiePlot3D;
-import org.jfree.data.general.DefaultPieDataset;
 import org.jfree.data.general.PieDataset;
 import org.jfree.util.Rotation;
 
@@ -24,15 +21,16 @@ import org.jfree.util.Rotation;
  * @author Jake
  */
 public class PieChart implements IChart {
-    private PieDataset _dataset;
+    private final PieDataset _dataset;
     private JFreeChart _chart;
-    private String _title;
+    private final String _title;
     
     PieChart(String title, PieDataset dataset) {
         _dataset = dataset;
         _title = title;
     }
     
+    @Override
     public void generate()
     {
         JFreeChart chart = ChartFactory.createPieChart(_title,          // chart title
@@ -51,6 +49,7 @@ public class PieChart implements IChart {
         _chart = chart;
     }
     
+    @Override
     public void saveAsImage(String path, int width, int height) throws IOException
     {
         ChartUtilities.saveChartAsPNG(new File(path), _chart, width, height);  

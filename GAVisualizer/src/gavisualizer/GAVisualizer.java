@@ -9,40 +9,16 @@ package gavisualizer;
  *
  * @author Jake
  */
-import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
-import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
-import com.google.api.client.http.HttpTransport;
-import com.google.api.client.json.JsonFactory;
-import com.google.api.client.json.gson.GsonFactory;
-
-import com.google.api.services.analytics.Analytics;
-import com.google.api.services.analytics.AnalyticsScopes;
-import com.google.api.services.analytics.model.Accounts;
 import com.google.api.services.analytics.model.GaData;
-import com.google.api.services.analytics.model.Profiles;
-import com.google.api.services.analytics.model.Webproperties;
 
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartPanel;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.plot.PiePlot;
-import org.jfree.chart.plot.PiePlot3D;
-import org.jfree.chart.labels.StandardPieSectionLabelGenerator;
 import org.jfree.data.general.DefaultPieDataset;
 import org.jfree.data.general.PieDataset;
-import org.jfree.util.Rotation;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.category.DefaultCategoryDataset;
-
-import java.util.List;
-import java.io.File;
-import java.io.IOException;
-import org.jfree.chart.ChartUtilities;
 
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.text.DateFormat;
-import java.util.Date;
 import java.util.*;
 import java.io.FileReader;
 
@@ -181,6 +157,17 @@ public class GAVisualizer {
             int count = 0;
             for (List<String> r : rows)
             {
+                // remove unwanted text
+                if(r.get(0).contains((CharSequence)"Cytoscape App Store - "))
+                {
+                    r.set(0, r.get(0).replace("Cytoscape App Store -", ""));
+                }
+                
+                if(r.get(0).contains((CharSequence)"category"))
+                {
+                    r.set(0, r.get(0).replace(" category", ""));
+                }
+                
                 if (count <= MAX_CATEGORIES) // Show the top 6
                 {
                     result.setValue(r.get(0), Integer.parseInt(r.get(1)));                    
