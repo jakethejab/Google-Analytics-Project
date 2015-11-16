@@ -8,6 +8,8 @@ package gavisualizer;
 import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
+import java.math.RoundingMode;
+import java.text.NumberFormat;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
@@ -43,7 +45,9 @@ public class PieChart implements IChart {
         plot.setDirection(Rotation.CLOCKWISE);
         plot.setForegroundAlpha(0.5f);
         plot.setBackgroundPaint(Color.WHITE);
-        plot.setLabelGenerator(new StandardPieSectionLabelGenerator("{0} {2}"));
+        //NumberFormat nf = NumberFormat.getPercentInstance();
+        //nf.setRoundingMode(RoundingMode.UP);
+        plot.setLabelGenerator(new StandardPieSectionLabelGenerator("{0} {2}")); //NumberFormat.getNumberInstance(), nf));
         plot.setOutlinePaint(Color.white);
         
         _chart = chart;

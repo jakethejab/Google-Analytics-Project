@@ -32,6 +32,7 @@ public class GoogleApiManager {
     private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
     private static final String START_DATE_WEBSITE = "2012-01-01";
     private static final String START_DATE_APPSTORE = "2012-06-01";
+    private static final int MAX_RESULTS = 100000;
     private String _END_DATE;
     private Analytics _analytics;
     private String _CytoscapeProfile;
@@ -58,6 +59,7 @@ public class GoogleApiManager {
                 .get("ga:" + _CytoscapeProfile, START_DATE_WEBSITE, _END_DATE, "ga:sessions")
                 .setDimensions("ga:country")
                 .setSort("-ga:sessions")
+                .setMaxResults(MAX_RESULTS)
                 .execute();
     }
     
@@ -66,6 +68,7 @@ public class GoogleApiManager {
                 .get("ga:" + _CytoscapeProfile, START_DATE_WEBSITE, _END_DATE, "ga:sessions")
                 .setDimensions("ga:sourceMedium")
                 .setSort("-ga:sessions")
+                .setMaxResults(MAX_RESULTS)
                 .execute();
     }
     
@@ -73,6 +76,7 @@ public class GoogleApiManager {
         return _analytics.data().ga()
                 .get("ga:" + _CytoscapeProfile, START_DATE_WEBSITE, _END_DATE, "ga:sessions")
                 .setDimensions("ga:nthWeek")
+                .setMaxResults(MAX_RESULTS)
                 .execute();
     }     
     
@@ -82,6 +86,7 @@ public class GoogleApiManager {
                 .setFilters("ga:pagePath==/download.php")
                 .setDimensions("ga:pagePath,ga:nthWeek")
                 .setSort("ga:nthWeek")
+                .setMaxResults(MAX_RESULTS)
                 .execute();
     }
       
@@ -91,6 +96,7 @@ public class GoogleApiManager {
                 .get("ga:" + _AppstoreProfile, START_DATE_APPSTORE, _END_DATE, "ga:sessions")
                 .setDimensions("ga:country")
                 .setSort("-ga:sessions")
+                .setMaxResults(MAX_RESULTS)
                 .execute();
     }
     
@@ -100,6 +106,7 @@ public class GoogleApiManager {
                 .get("ga:" + _AppstoreProfile, START_DATE_APPSTORE, _END_DATE, "ga:sessions")
                 .setDimensions("ga:sourceMedium")
                 .setSort("-ga:sessions")
+                .setMaxResults(MAX_RESULTS)
                 .execute();
     }
     
@@ -108,6 +115,7 @@ public class GoogleApiManager {
         return _analytics.data().ga()
                 .get("ga:" + _AppstoreProfile, START_DATE_APPSTORE, _END_DATE, "ga:sessions")
                 .setDimensions("ga:nthWeek")
+                .setMaxResults(MAX_RESULTS)
                 .execute();
     }
     
@@ -118,6 +126,7 @@ public class GoogleApiManager {
                 .setDimensions("ga:pageTitle")
                 .setSort("-ga:pageviews")
                 .setFilters("ga:pageTitle=~category")
+                .setMaxResults(MAX_RESULTS)
                 .execute();
     }
 
@@ -221,8 +230,8 @@ public class GoogleApiManager {
         DateFormat write = new SimpleDateFormat("yyyy-MM-dd");
         
         //return the date with the expected output format
-        return write.format(d);
+        //return write.format(d);
         //return "2015-02-22"; // customer example
-        //return "2015-11-14";
+        return "2015-11-14";
     }
 }
