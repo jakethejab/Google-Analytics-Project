@@ -230,8 +230,8 @@ public class GoogleApiManager {
         DateFormat write = new SimpleDateFormat("yyyy-MM-dd");
         
         //return the date with the expected output format
-        //return write.format(d);
+        return write.format(d);
         //return "2015-02-22"; // customer example
-        return "2015-11-14";
+        //return "2015-11-14";
     }
 }
