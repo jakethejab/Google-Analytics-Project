@@ -12,10 +12,13 @@ import java.io.IOException;
  * @author Jake
  */
 public class ChartGenerator {
+    
+    // Global variables needed for chart generation
     private String _filepath;
     private int _imageWidth;
     private int _imageHeight;
     
+    // Constructor that sets arguments to the global variables
     ChartGenerator(String filepath, int imageWidth, int imageHeight)
     {
         _filepath = filepath;
@@ -23,10 +26,13 @@ public class ChartGenerator {
         _imageHeight = imageHeight;
     }
     
+    // Generate the chart and output the file to a saved location
     public void generateAndSaveChart(IChart chart, String filename) throws IOException
     {
+        // Generate chart
         chart.generate();
         
+        // Save to file location
         String path = _filepath + filename;
         chart.saveAsImage(path, _imageWidth, _imageHeight);
     }
