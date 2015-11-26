@@ -33,7 +33,10 @@ public class ChartGenerator {
         chart.generate();
         
         // Save to file location
-        String path = _filepath + filename;
-        chart.saveAsImage(path, _imageWidth, _imageHeight);
+        String pathPNG = _filepath + filename + ".png";
+        String pathSVG = _filepath + filename + ".svg";
+        
+        chart.saveAsImage(pathPNG, _imageWidth, _imageHeight);
+        chart.saveAsSVG(pathSVG, _imageWidth, _imageHeight);
     }
 }

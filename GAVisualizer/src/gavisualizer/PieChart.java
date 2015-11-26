@@ -6,6 +6,7 @@
 package gavisualizer;
 
 import java.awt.Color;
+import java.awt.Rectangle;
 import java.io.File;
 import java.io.IOException;
 import org.jfree.chart.ChartFactory;
@@ -15,6 +16,8 @@ import org.jfree.chart.labels.StandardPieSectionLabelGenerator;
 import org.jfree.chart.plot.PiePlot;
 import org.jfree.data.general.PieDataset;
 import org.jfree.util.Rotation;
+import org.jfree.graphics2d.svg.SVGGraphics2D;
+import org.jfree.graphics2d.svg.SVGUtils;
 
 /**
  *
@@ -70,5 +73,16 @@ public class PieChart implements IChart {
     {
         // Save image as PNG
         ChartUtilities.saveChartAsPNG(new File(path), _chart, width, height);  
+    }
+    
+    @Override
+    public void saveAsSVG(String path, int width, int height) throws IOException
+    {
+        // Save image as SVG
+        SVGGraphics2D g2 = new SVGGraphics2D(width, height);
+        Rectangle r = new Rectangle(0, 0, width, height);
+        _chart.draw(g2, r);
+        File f = new File(path);
+        SVGUtils.writeToSVG(f, g2.getSVGElement());
     }
 }

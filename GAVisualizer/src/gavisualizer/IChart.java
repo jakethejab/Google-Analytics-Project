@@ -15,4 +15,5 @@ public interface IChart {
     public void generate();
     
     public void saveAsImage(String path, int width, int height) throws IOException;
+    public void saveAsSVG(String path, int width, int height) throws IOException;
 }

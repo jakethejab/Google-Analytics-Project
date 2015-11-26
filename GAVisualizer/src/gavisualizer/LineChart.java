@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Paint;
+import java.awt.Rectangle;
 import java.util.List;
 
 import org.jfree.chart.ChartFactory;
@@ -25,6 +26,8 @@ import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.renderer.AbstractRenderer;
 import org.jfree.chart.LegendItemCollection;
 import org.jfree.chart.LegendItem;
+import org.jfree.graphics2d.svg.SVGGraphics2D;
+import org.jfree.graphics2d.svg.SVGUtils;
  
 
 /**
@@ -143,4 +146,15 @@ public class LineChart implements IChart {
         // Save image as PNG
         ChartUtilities.saveChartAsPNG(new File(path), _chart, width, height);  
     }
+    
+    @Override
+    public void saveAsSVG(String path, int width, int height) throws IOException
+    {
+        // Save image as SVG
+        SVGGraphics2D g2 = new SVGGraphics2D(width, height);
+        Rectangle r = new Rectangle(0, 0, width, height);
+        _chart.draw(g2, r);
+        File f = new File(path);
+        SVGUtils.writeToSVG(f, g2.getSVGElement());
+    }    
 }

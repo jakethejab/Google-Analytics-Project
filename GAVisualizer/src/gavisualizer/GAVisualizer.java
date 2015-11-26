@@ -22,6 +22,8 @@ import java.text.DateFormat;
 import java.util.*;
 import java.io.FileReader;
 
+import org.apache.log4j.Logger;
+
 /**
  * Creates statistic charts by accessing Google Analytics repository from 
  * the provided credentials:
@@ -39,105 +41,200 @@ public class GAVisualizer {
     // Number of pie pieces for the pie charts as defined by the customer
     private static final int MAX_COUNT = 10;
     private static final int MAX_CATEGORIES = 6;
+    private static Logger _log = Logger.getLogger(GAVisualizer.class.getName()); // The log4j global variable
     
     public static void main(String[] args) {
         try {
             
+            boolean isPropertyFileSpecified = false;
+            
             // Captures arguments from app.properties
             args = new String[1];
-            args[0] = "src\\gavisualizer\\app.properties";
+            args[0] = "src\\app.properties";
             
             String configFilePath = "";
             if (args.length > 0)
             {
                 configFilePath = args[0];
+                isPropertyFileSpecified = true;
+            }
+            else
+            {
+                _log.error("The path to the properties file has not been specified as an argument.");
             }
             
-            // Loads in the app.properties file
-            Properties prop = new Properties();
-            FileReader reader = new FileReader(configFilePath);
-            prop.load(reader);
-            
-            // Get/Set arguments from app.properties file
-            int imageWidth = Integer.parseInt(prop.getProperty("imageWidth"));
-            int imageHeight = Integer.parseInt(prop.getProperty("imageHeight"));
-            String outputPath = prop.getProperty("outputPath");
-            String certificatePath = prop.getProperty("certificatePath");
-            String serviceAccountEmail = prop.getProperty("serviceAccountEmail");
-            
-            // Create instances for chart generation and Google Analytics API access
-            ChartGenerator generator = new ChartGenerator(outputPath, imageWidth, imageHeight);
-            GoogleApiManager api = new GoogleApiManager(certificatePath, serviceAccountEmail);
-            
-            /**
-             * Here the statistic chart will be created.
-             * To create each chart, the following steps are done:
-             *       (1) Extract data from query for specific statistic chart
-             *       (2) Convert data set to specific chart type (ex. pie chart)
-             *       (3) Create chart title
-             *       (4) Create chart
-             *       (5) Generate and save chart to output folder
-             */
-            
-            // PieChart - Website visits by Country
-            GaData raw = api.getSessionsByCountry();           
-            PieDataset ds1 = createPieDataset(raw);             
-            String title = createTitleSessionsByCountry(raw);   
-            PieChart chart1 = new PieChart(title, ds1);         
-            
-            generator.generateAndSaveChart(chart1, "sessions_by_country.png");
-            
-            // LineChart - Website Visits and Cytoscape Downloads
-            GaData raw2 = api.getWebsiteDownloads();
-            GaData rawWebsiteSessionsByWeek = api.getWebsiteSessionsByWeek();
-            CategoryDataset ds2 = createDSWebsiteDownloads(raw2, rawWebsiteSessionsByWeek);
-            String title2 = createTitleWebsiteDownloads(raw2);
-            LineChart chart2 = new LineChart(title2, ds2, "Week", "Count");
-            
-            generator.generateAndSaveChart(chart2, "website_downloads.png");
-            
-            // PieChart - Website Referral Sources
-            GaData raw3 = api.getWebsiteReferralSources();
-            PieDataset ds3 = createPieDataset(raw3);
-            String title3 = createTitleWebsiteReferralSources(raw3);
-            PieChart chart3 = new PieChart(title3, ds3);
-            
-            generator.generateAndSaveChart(chart3, "website_referral_sources.png");  
-            
-            // PieChart - App Store Visits by Country
-            GaData raw4 = api.getAppSessionsByCountry();
-            PieDataset ds4 = createPieDataset(raw4);
-            String title4 = createTitleAppSessionsByCountry(raw4);
-            PieChart chart4 = new PieChart(title4, ds4);
-            
-            generator.generateAndSaveChart(chart4, "appstore_sessions_by_country.png");
-            
-            // PieChart - App Store Referral Sources
-            GaData raw5 = api.getAppReferralSources();
-            PieDataset ds5 = createPieDataset(raw5);
-            String title5 = createTitleAppReferralSources(raw5);
-            PieChart chart5 = new PieChart(title5, ds5);
-            
-            generator.generateAndSaveChart(chart5, "appstore_referrals_by_source.png");
-            
-            // LineChart - App Store Visits per Week
-            GaData raw6 = api.getAppSessionsByWeek();
-            CategoryDataset ds6 = createDSVisits(raw6);
-            String title6 = createTitleAppSessionsByWeek(raw6);
-            LineChart chart6 = new LineChart(title6, ds6, "Week", "Count");
-            
-            generator.generateAndSaveChart(chart6, "appstore_visits_per_week.png");
-            
-            // PieChart - Top App Store Attractions by Category
-            GaData raw7 = api.getAppAttractionsByCategory();
-            PieDataset ds7 = createPieDatasetCategories(raw7);
-            String title7 = createTitleAppAttractionsByCategory(raw7);
-            PieChart chart7 = new PieChart(title7, ds7);
-            
-            generator.generateAndSaveChart(chart7, "top_appstore_attractions_by_category.png");
+            if (isPropertyFileSpecified)
+            {
+                // Loads in the app.properties file
+                Properties prop = new Properties();
+                FileReader reader = new FileReader(configFilePath);
+                prop.load(reader);
+
+                // Get/Set arguments from app.properties file   
+                int imageWidth = Integer.parseInt(prop.getProperty("imageWidth"));
+                int imageHeight = Integer.parseInt(prop.getProperty("imageHeight"));
+                String outputPath = prop.getProperty("outputPath");
+                String certificatePath = prop.getProperty("certificatePath");
+                String serviceAccountEmail = prop.getProperty("serviceAccountEmail");
+
+                _log.debug("Property: imageWidth: " + imageWidth);
+                _log.debug("Property: imageHeight: " + imageHeight);
+                _log.debug("Property: outputPath: " + outputPath);
+                _log.debug("Property: certificatePath: " + certificatePath);
+                _log.debug("Property: serviceAccountEmail: " + serviceAccountEmail);
+
+                // Create instances for chart generation and Google Analytics API access
+                ChartGenerator generator = new ChartGenerator(outputPath, imageWidth, imageHeight);
+                GoogleApiManager api = new GoogleApiManager(certificatePath, serviceAccountEmail);
+
+                /**
+                 * Here the statistic chart will be created.
+                 * To create each chart, the following steps are done:
+                 *       (1) Extract data from query for specific statistic chart
+                 *       (2) Convert data set to specific chart type (ex. pie chart)
+                 *       (3) Create chart title
+                 *       (4) Create chart
+                 *       (5) Generate and save chart to output folder
+                 */
+
+                // PieChart - Website visits by Country
+                _log.info("Starting generation of Website visits by Country chart");
+                try
+                {
+                    GaData raw = api.getSessionsByCountry();           
+                    PieDataset ds1 = createPieDataset(raw);
+                    _log.debug(getAPILogEntry(raw));
+                    String title = createTitleSessionsByCountry(raw);   
+                    PieChart chart1 = new PieChart(title, ds1);         
+
+                    generator.generateAndSaveChart(chart1, "sessions_by_country");
+
+                    _log.info("Website visits by Country chart successfully saved");
+                }
+                catch (Exception ex)
+                {
+                    _log.error(ex.getMessage());
+                }
+                
+                _log.info("Starting generation of Website Visits and Cytoscape Downloads");
+                try
+                {
+                    // LineChart - Website Visits and Cytoscape Downloads
+                    GaData raw2 = api.getWebsiteDownloads();
+                    _log.debug(getAPILogEntry(raw2));
+                    GaData rawWebsiteSessionsByWeek = api.getWebsiteSessionsByWeek();
+                    _log.debug(getAPILogEntry(rawWebsiteSessionsByWeek));
+                    CategoryDataset ds2 = createDSWebsiteDownloads(raw2, rawWebsiteSessionsByWeek);
+                    String title2 = createTitleWebsiteDownloads(raw2);
+                    LineChart chart2 = new LineChart(title2, ds2, "Week", "Count");
+
+                    generator.generateAndSaveChart(chart2, "website_downloads");
+                    
+                    _log.info("Website Visits and Cytoscape Downloads chart successfully saved");
+                }
+                catch (Exception ex)
+                {
+                    _log.error(ex.getMessage());
+                }                
+
+                _log.info("Starting generation of Website Referral Sources");
+                try
+                {                
+                    // PieChart - Website Referral Sources
+                    GaData raw3 = api.getWebsiteReferralSources();
+                    _log.debug(getAPILogEntry(raw3));
+                    PieDataset ds3 = createPieDataset(raw3);
+                    String title3 = createTitleWebsiteReferralSources(raw3);
+                    PieChart chart3 = new PieChart(title3, ds3);
+
+                    generator.generateAndSaveChart(chart3, "website_referral_sources");  
+                    
+                    _log.info("Website Referral Sources chart successfully saved");
+                }
+                catch (Exception ex)
+                {
+                    _log.error(ex.getMessage());
+                }
+                
+                _log.info("Starting generation of App Store Visits by Country");
+                try
+                {                   
+                    // PieChart - App Store Visits by Country
+                    GaData raw4 = api.getAppSessionsByCountry();
+                    _log.debug(getAPILogEntry(raw4));
+                    PieDataset ds4 = createPieDataset(raw4);
+                    String title4 = createTitleAppSessionsByCountry(raw4);
+                    PieChart chart4 = new PieChart(title4, ds4);
+
+                    generator.generateAndSaveChart(chart4, "appstore_sessions_by_country");
+                    
+                    _log.info("App Store Visits by Country chart successfully saved");
+                }
+                catch (Exception ex)
+                {
+                    _log.error(ex.getMessage());
+                }
+                
+                _log.info("Starting generation of App Store Referral Sources");
+                try
+                {                  
+                    // PieChart - App Store Referral Sources
+                    GaData raw5 = api.getAppReferralSources();
+                    _log.debug(getAPILogEntry(raw5));
+                    PieDataset ds5 = createPieDataset(raw5);
+                    String title5 = createTitleAppReferralSources(raw5);
+                    PieChart chart5 = new PieChart(title5, ds5);
+
+                    generator.generateAndSaveChart(chart5, "appstore_referrals_by_source");
+                    
+                    _log.info("App Store Referral Sources chart successfully saved");
+                }
+                catch (Exception ex)
+                {
+                    _log.error(ex.getMessage());
+                }
+                
+                _log.info("Starting generation of App Store Visits per Week");
+                try
+                {                
+                    // LineChart - App Store Visits per Week
+                    GaData raw6 = api.getAppSessionsByWeek();
+                    _log.debug(getAPILogEntry(raw6));
+                    CategoryDataset ds6 = createDSVisits(raw6);
+                    String title6 = createTitleAppSessionsByWeek(raw6);
+                    LineChart chart6 = new LineChart(title6, ds6, "Week", "Count");
+
+                    generator.generateAndSaveChart(chart6, "appstore_visits_per_week");
+                    
+                    _log.info("App Store Visits per Week chart successfully saved");
+                }
+                catch (Exception ex)
+                {
+                    _log.error(ex.getMessage());
+                }
+                
+                _log.info("Starting generation of Top App Store Attractions by Category");
+                try
+                {                    
+                    // PieChart - Top App Store Attractions by Category
+                    GaData raw7 = api.getAppAttractionsByCategory();
+                    _log.debug(getAPILogEntry(raw7));
+                    PieDataset ds7 = createPieDatasetCategories(raw7);
+                    String title7 = createTitleAppAttractionsByCategory(raw7);
+                    PieChart chart7 = new PieChart(title7, ds7);
+
+                    generator.generateAndSaveChart(chart7, "top_appstore_attractions_by_category");
+                    
+                    _log.info("Top App Store Attractions by Category chart successfully saved");
+                }
+                catch (Exception ex)
+                {
+                    _log.error(ex.getMessage());
+                }                
+            }
         } 
-        catch (Exception e) {
-            e.printStackTrace();
+        catch (Exception ex) {
+            _log.error(ex.getMessage());
         }
     }
 
@@ -171,9 +268,7 @@ public class GAVisualizer {
             
             result.setValue("Other", otherVal);
             
-        } 
-        else
-            System.out.println("No results found");
+        }
         
         // Return the pie chart pieces for chart creation
         return result;
@@ -221,8 +316,6 @@ public class GAVisualizer {
 
                 count++;
             }
-        } else {
-            System.out.println("No results found");
         }
         
         return result;
@@ -421,8 +514,8 @@ public class GAVisualizer {
         try {
             d = read.parse(date);
         }
-        catch(Exception e) {
-            e.printStackTrace();
+        catch(Exception ex) {
+            _log.error(ex.getMessage());
         }
         
         // Create a format to write the output format
@@ -443,8 +536,8 @@ public class GAVisualizer {
         try {
             d = read.parse(date);
         }
-        catch(Exception e) {
-            e.printStackTrace();
+        catch(Exception ex) {
+            _log.error(ex.getMessage());
         }
         
         // Create a format to write the output format
@@ -452,5 +545,10 @@ public class GAVisualizer {
         
         // Return formatted year
         return write.format(d);
+    }
+    
+    private static String getAPILogEntry(GaData raw)
+    {
+        return "API returned " + (raw.getRows().isEmpty() ? "0" : raw.getRows().size()) + " rows";        
     }
 }
