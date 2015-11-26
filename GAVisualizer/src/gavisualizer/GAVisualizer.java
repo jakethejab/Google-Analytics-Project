@@ -41,7 +41,9 @@ public class GAVisualizer {
     // Number of pie pieces for the pie charts as defined by the customer
     private static final int MAX_COUNT = 10;
     private static final int MAX_CATEGORIES = 6;
-    private static Logger _log = Logger.getLogger(GAVisualizer.class.getName()); // The log4j global variable
+    
+    // The log4j global variable
+    private static Logger _log = Logger.getLogger(GAVisualizer.class.getName()); 
     
     public static void main(String[] args) {
         try {

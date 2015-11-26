@@ -24,10 +24,12 @@ import org.jfree.chart.renderer.category.LineAndShapeRenderer;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.renderer.AbstractRenderer;
+import org.jfree.chart.title.LegendTitle;
 import org.jfree.chart.LegendItemCollection;
 import org.jfree.chart.LegendItem;
 import org.jfree.graphics2d.svg.SVGGraphics2D;
 import org.jfree.graphics2d.svg.SVGUtils;
+import org.jfree.ui.RectangleEdge;
  
 
 /**
@@ -87,6 +89,10 @@ public class LineChart implements IChart {
         plot.setBackgroundPaint(Color.white);
         plot.setRangeGridlinePaint(Color.lightGray);
         plot.setOutlinePaint(Color.white);
+        
+        // Set Legend to the right of the chart
+        final LegendTitle lt = (LegendTitle) chart.getLegend();
+        lt.setPosition(RectangleEdge.RIGHT);
         
         // Set paints for lines in the chart
         LineAndShapeRenderer renderer = (LineAndShapeRenderer) plot.getRenderer();
