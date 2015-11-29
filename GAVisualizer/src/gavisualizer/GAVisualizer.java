@@ -43,7 +43,7 @@ public class GAVisualizer {
     private static final int MAX_CATEGORIES = 6;
     
     // The log4j global variable
-    private static Logger _log = Logger.getLogger(GAVisualizer.class.getName()); 
+    private static final Logger _log = Logger.getLogger(GAVisualizer.class.getName()); 
     
     public static void main(String[] args) {
         try {
@@ -548,7 +548,7 @@ public class GAVisualizer {
         // Return formatted year
         return write.format(d);
     }
-    
+       
     private static String getAPILogEntry(GaData raw)
     {
         return "API returned " + (raw.getRows().isEmpty() ? "0" : raw.getRows().size()) + " rows";        

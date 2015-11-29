@@ -34,8 +34,7 @@ public class GoogleApiManager {
     private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
     
     // default start dates defined by the customer and 
-    private static final String START_DATE_WEBSITE = "2012-01-01";
-    private static final String START_DATE_APPSTORE = "2012-06-01";
+    private static final String START_DATE = "2012-01-01";
     
     // max results for each query
     private static final int MAX_RESULTS = 100000;
@@ -69,7 +68,7 @@ public class GoogleApiManager {
     // query to extract website visits by country
     public GaData getSessionsByCountry() throws IOException {
         return _analytics.data().ga()
-                .get("ga:" + _cytoscapeProfile, START_DATE_WEBSITE, _endDate, "ga:sessions")
+                .get("ga:" + _cytoscapeProfile, START_DATE, _endDate, "ga:sessions")
                 .setDimensions("ga:country")
                 .setSort("-ga:sessions")
                 .setMaxResults(MAX_RESULTS)
@@ -79,7 +78,7 @@ public class GoogleApiManager {
     // query to extract website referral sources
     public GaData getWebsiteReferralSources() throws IOException {
         return _analytics.data().ga()
-                .get("ga:" + _cytoscapeProfile, START_DATE_WEBSITE, _endDate, "ga:sessions")
+                .get("ga:" + _cytoscapeProfile, START_DATE, _endDate, "ga:sessions")
                 .setDimensions("ga:sourceMedium")
                 .setSort("-ga:sessions")
                 .setMaxResults(MAX_RESULTS)
@@ -89,7 +88,7 @@ public class GoogleApiManager {
     // query to extract website sessions by week
     public GaData getWebsiteSessionsByWeek() throws IOException {
         return _analytics.data().ga()
-                .get("ga:" + _cytoscapeProfile, START_DATE_WEBSITE, _endDate, "ga:sessions")
+                .get("ga:" + _cytoscapeProfile, START_DATE, _endDate, "ga:sessions")
                 .setDimensions("ga:nthWeek")
                 .setMaxResults(MAX_RESULTS)
                 .execute();
@@ -98,7 +97,7 @@ public class GoogleApiManager {
     // query to extract website downloads
     public GaData getWebsiteDownloads() throws IOException {
         return _analytics.data().ga()
-                .get("ga:" + _cytoscapeProfile, START_DATE_WEBSITE, _endDate, "ga:pageviews")
+                .get("ga:" + _cytoscapeProfile, START_DATE, _endDate, "ga:pageviews")
                 .setFilters("ga:pagePath==/download.php")
                 .setDimensions("ga:pagePath,ga:nthWeek")
                 .setSort("ga:nthWeek")
@@ -109,7 +108,7 @@ public class GoogleApiManager {
     // query to extract app store visits by country
     public GaData getAppSessionsByCountry() throws IOException {  
         return _analytics.data().ga()
-                .get("ga:" + _appstoreProfile, START_DATE_APPSTORE, _endDate, "ga:sessions")
+                .get("ga:" + _appstoreProfile, START_DATE, _endDate, "ga:sessions")
                 .setDimensions("ga:country")
                 .setSort("-ga:sessions")
                 .setMaxResults(MAX_RESULTS)
@@ -119,7 +118,7 @@ public class GoogleApiManager {
     // query to extract app store referral sources
     public GaData getAppReferralSources() throws IOException {
         return _analytics.data().ga()
-                .get("ga:" + _appstoreProfile, START_DATE_APPSTORE, _endDate, "ga:sessions")
+                .get("ga:" + _appstoreProfile, START_DATE, _endDate, "ga:sessions")
                 .setDimensions("ga:sourceMedium")
                 .setSort("-ga:sessions")
                 .setMaxResults(MAX_RESULTS)
@@ -129,7 +128,7 @@ public class GoogleApiManager {
     // query to extract app sessions by week
     public GaData getAppSessionsByWeek () throws IOException {
         return _analytics.data().ga()
-                .get("ga:" + _appstoreProfile, START_DATE_APPSTORE, _endDate, "ga:sessions")
+                .get("ga:" + _appstoreProfile, START_DATE, _endDate, "ga:sessions")
                 .setDimensions("ga:nthWeek")
                 .setMaxResults(MAX_RESULTS)
                 .execute();
@@ -138,7 +137,7 @@ public class GoogleApiManager {
     // query to extract app store attractions by category
     public GaData getAppAttractionsByCategory () throws IOException {
         return _analytics.data().ga()
-                .get("ga:" + _appstoreProfile, START_DATE_APPSTORE, _endDate, "ga:pageviews")
+                .get("ga:" + _appstoreProfile, START_DATE, _endDate, "ga:pageviews")
                 .setDimensions("ga:pageTitle")
                 .setSort("-ga:pageviews")
                 .setFilters("ga:pageTitle=~category")
