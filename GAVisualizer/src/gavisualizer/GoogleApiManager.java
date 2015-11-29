@@ -23,6 +23,8 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.apache.log4j.Logger;
+
 /**
  *
  * @author Jake
@@ -45,6 +47,9 @@ public class GoogleApiManager {
     private String _serviceAccountEmail;// service account email assoiated with Google Analytics
     private String _endDate;            // the end date for all queries
     
+    // The log4j global variable
+    private static Logger _log = Logger.getLogger(GAVisualizer.class.getName());
+    
     // constructor for the Google API Manager
     GoogleApiManager(String certificatePath, String serviceAccountEmail) {
         try
@@ -56,8 +61,8 @@ public class GoogleApiManager {
             _cytoscapeProfile = getFirstProfileId();
             _appstoreProfile = getSecondProfileId();
             _endDate = getToday();
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception ex) {
+            _log.error(ex.getMessage());
         }        
     }
     
@@ -168,7 +173,7 @@ public class GoogleApiManager {
         Accounts accounts = _analytics.management().accounts().list().execute();
 
         if (accounts.getItems().isEmpty()) {
-            System.err.println("No accounts found");
+            _log.error("No accounts found");
         } else {
             String firstAccountId = accounts.getItems().get(0).getId();
 
@@ -177,7 +182,7 @@ public class GoogleApiManager {
                     .list(firstAccountId).execute();
 
             if (properties.getItems().isEmpty()) {
-                System.err.println("No Webproperties found");
+                _log.error("No Webproperties found");
             } else {
                 String firstWebpropertyId = properties.getItems().get(0).getId();
 
@@ -186,7 +191,7 @@ public class GoogleApiManager {
                         .list(firstAccountId, firstWebpropertyId).execute();
 
                 if (profiles.getItems().isEmpty()) {
-                    System.err.println("No views (profiles) found");
+                    _log.error("No views (profiles) found");
                 } else {
                     // Return the first (view) profile associated with the property.
                     profileId = profiles.getItems().get(0).getId();
@@ -204,7 +209,7 @@ public class GoogleApiManager {
         Accounts accounts = _analytics.management().accounts().list().execute();
 
         if (accounts.getItems().isEmpty()) {
-            System.err.println("No accounts found");
+            _log.error("No accounts found");
         } else {
             String firstAccountId = accounts.getItems().get(0).getId();
 
@@ -213,7 +218,7 @@ public class GoogleApiManager {
                     .list(firstAccountId).execute();
 
             if (properties.getItems().isEmpty()) {
-                System.err.println("No Webproperties found");
+                _log.error("No Webproperties found");
             } else {
                 String secondWebpropertyId = properties.getItems().get(1).getId();
 
@@ -222,7 +227,7 @@ public class GoogleApiManager {
                         .list(firstAccountId, secondWebpropertyId).execute();
 
                 if (profiles.getItems().isEmpty()) {
-                    System.err.println("No views (profiles) found");
+                    _log.error("No views (profiles) found");
                 } else {
                     // Return the first (view) profile associated with the property.
                     profileId = profiles.getItems().get(0).getId();
